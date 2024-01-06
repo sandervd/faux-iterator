@@ -9,7 +9,7 @@ SELECT ?range ?offset
 {
   BIND(5 AS ?range)
   # Create a set {0, 1, 2, 3, ..., ?range - 1}
-  ?range f:fauxItterator ?offset
+  ?range f:fauxIterator ?offset
 }
 ```
 
