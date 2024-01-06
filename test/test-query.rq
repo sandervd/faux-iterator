@@ -1,0 +1,32 @@
+PREFIX f: <java:eu.essentialcomplexity.sparql.pfunction.>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?fromDateTime ?toDateTime ?quarterDateTime
+{
+  # From
+  BIND("2024-01-05T12:00:00Z"^^xsd:dateTime AS ?fromDateTime)
+  BIND("2024-01-06T12:00:00Z"^^xsd:dateTime AS ?toDateTime)
+
+  # Unix epoch start
+  BIND("1970-01-01T00:00:00Z"^^xsd:dateTime AS ?epoch)
+
+  # Calculate duration since the epoch
+  BIND((?fromDateTime - ?epoch) AS ?fromDuration)
+  BIND((?toDateTime - ?epoch) AS ?toDuration)
+
+  # Extract the days, hours, minutes, and seconds from the duration
+  BIND(xsd:integer(day(?fromDuration) * 86400 + hours(?fromDuration) * 3600 + minutes(?fromDuration) * 60 + seconds(?fromDuration)) AS ?from)
+  BIND(xsd:integer(day(?toDuration) * 86400 + hours(?toDuration) * 3600 + minutes(?toDuration) * 60 + seconds(?toDuration)) AS ?to)
+
+  # Calculate the number of qwarters (15min.) between from and to.
+  BIND(xsd:integer(FLOOR((?to - ?from) / (15 * 60))) as ?range)
+  # Create a set {0, 1, 2, 3, ..., ?range - 1}
+  ?range f:fauxIterator ?offset
+  # Calculate the timestamp of each quarter
+  BIND(xsd:integer(?from + (?offset * 15 * 60)) as ?quarterTimestamp )
+
+  # Turn querterly timestamp into duration in seconds.
+  BIND(STRDT(CONCAT("PT", STR(?quarterTimestamp), "S"), xsd:duration) AS ?quarterTimeAsDuration)
+  
+  # Add duration to the epoch to create the dateTime.
+  BIND((?epoch + ?quarterTimeAsDuration) AS ?quarterDateTime)
+}

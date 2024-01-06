@@ -1,0 +1,8 @@
+PREFIX f: <java:eu.essentialcomplexity.sparql.pfunction.>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?range ?offset
+{
+  BIND(5 AS ?range)
+  # Create a set {0, 1, 2, 3, ..., ?range - 1}
+  ?range f:fauxIterator ?offset
+}
